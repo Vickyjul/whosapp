@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Privat Online - Firebase</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container { 
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        .header .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+        #loginScreen, #chatScreen { padding: 30px; }
+        #chatScreen { display: none; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover { transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
+        .room-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .room-info strong { color: #667eea; font-size: 18px; }
+        .room-info small { display: block; margin-top: 5px; color: #666; }
+        .online-status {
+            text-align: center;
+            padding: 8px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        #messages {
+            height: 320px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fafafa;
+        }
+        #messages:empty::before {
+            content: 'Belum ada pesan. Mulai chat sekarang! ??';
+            color: #999;
+            font-style: italic;
+            display: block;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .message {
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            animation: slideIn 0.3s;
+            word-wrap: break-word;
+            max-width: 80%;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .message.own {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+            animation: slideIn 0.3s;
+        }
+        .message.own {
+            animation-name: slideInRight;
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .message.other {
+            background: #e0e0e0;
+            color: #333;
+            margin-right: auto;
+        }
+        .message .sender {
+            font-weight: 600;
+            font-size: 11px;
+            margin-bottom: 4px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .message .text { 
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .message .time {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+        .send-box {
+            display: flex;
+            gap: 10px;
+        }
+        .send-box input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .send-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .send-box button {
+            width: auto;
+            padding: 12px 25px;
+        }
+        #leaveBtn {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            margin-top: 10px;
+        }
+        .typing-indicator {
+            padding: 8px 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>?? Chat Privat Online</h1>
+            <p>Real-time chat dengan Firebase</p>
+            <div class="badge">Powered by Firebase</div>
+        </div>
+
+        <div id="loginScreen">
+            <div class="input-group">
+                <label>Nama Anda</label>
+                <input type="text" id="username" placeholder="Masukkan nama..." autofocus>
+            </div>
+            <div class="input-group">
+                <label>Kode Room</label>
+                <input type="text" id="roomCode" placeholder="Contoh: rahasia123">
+            </div>
+            <button onclick="joinRoom()">Masuk Room</button>
+        </div>
+
+        <div id="chatScreen">
+            <div class="room-info">
+                Room: <strong id="currentRoom"></strong>
+                <small>?? Bagikan kode ini ke teman untuk chat bersama</small>
+            </div>
+            <div class="online-status">
+                <div class="online-dot"></div>
+                <span>Terhubung ke server Firebase</span>
+            </div>
+            <div id="messages"></div>
+            <div class="send-box">
+                <input type="text" id="messageInput" placeholder="Ketik pesan..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()">Kirim</button>
+            </div>
+            <button id="leaveBtn" onclick="leaveRoom()">Keluar Room</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBKugvHq1Y5OeAjUWTAYrvXujJXuhrJKKA",
+            authDomain: "chatsaya-417c0.firebaseapp.com",
+            databaseURL: "https://chatsaya-417c0-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "chatsaya-417c0",
+            storageBucket: "chatsaya-417c0.firebasestorage.app",
+            messagingSenderId: "132637866049",
+            appId: "1:132637866049:web:6df82029e2036630aeaec0"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let username = '';
+        let roomCode = '';
+        let messagesRef = null;
+
+        function joinRoom() {
+            const userInput = document.getElementById('username').value.trim();
+            const roomInput = document.getElementById('roomCode').value.trim();
+
+            if (!userInput || !roomInput) {
+                alert('Nama dan kode room harus diisi!');
+                return;
+            }
+
+            username = userInput;
+            roomCode = roomInput;
+
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'block';
+            document.getElementById('currentRoom').textContent = roomCode;
+
+            // Reference ke room chat
+            messagesRef = database.ref('rooms/' + roomCode + '/messages');
+
+            // Listen untuk pesan baru
+            messagesRef.on('child_added', (snapshot) => {
+                const message = snapshot.val();
+                displayMessage(message);
+            });
+
+            // Scroll ke bawah
+            scrollToBottom();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+
+            if (!text) {
+                alert('Pesan tidak boleh kosong!');
+                return;
+            }
+
+            const newMessage = {
+                sender: username,
+                text: text,
+                timestamp: Date.now(),
+                time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'})
+            };
+
+            // Kirim ke Firebase
+            messagesRef.push(newMessage)
+                .then(() => {
+                    input.value = '';
+                    scrollToBottom();
+                })
+                .catch((error) => {
+                    console.error('Error mengirim pesan:', error);
+                    alert('Gagal mengirim pesan. Coba lagi!');
+                });
+        }
+
+        function displayMessage(message) {
+            const container = document.getElementById('messages');
+            
+            const div = document.createElement('div');
+            div.className = 'message ' + (message.sender === username ? 'own' : 'other');
+            div.innerHTML = `
+                <div class="sender">${escapeHtml(message.sender)}</div>
+                <div class="text">${escapeHtml(message.text)}</div>
+                <div class="time">${message.time}</div>
+            `;
+            container.appendChild(div);
+
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('messages');
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function leaveRoom() {
+            if (confirm('Yakin ingin keluar dari room?')) {
+                // Unsubscribe dari listener
+                if (messagesRef) {
+                    messagesRef.off();
+                }
+
+                document.getElementById('chatScreen').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'block';
+                document.getElementById('username').value = '';
+                document.getElementById('roomCode').value = '';
+                document.getElementById('messages').innerHTML = '';
+                username = '';
+                roomCode = '';
+                messagesRef = null;
+            }
+        }
+
+        // Enter key handler
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('username').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') document.getElementById('roomCode').focus();
+            });
+            document.getElementById('roomCode').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') joinRoom();
+            });
+        });
+    </script>
+</body>
+</html>
