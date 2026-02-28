@@ -1,171 +1,330 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VIP CHAT - Video Call</title>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卒業おめでとう、アイサ！🌸</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Noto+Sans+JP:wght@300;500;700&display=swap" rel="stylesheet">
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --primary: #4f46e5; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --border: #e2e8f0; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--text); height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        :root {
+            --neon-pink: #FF69B4;
+            --deep-crimson: #8B0000;
+            --vibrant-purple: #BF40BF;
+            --gold: #FFD700;
+        }
 
-        .container { width: 100%; max-width: 450px; height: 100%; background: var(--card); display: flex; flex-direction: column; position: relative; }
-        #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px; border-radius: 15px; max-width: 80%; font-size: 14px; }
-        .msg.own { align-self: flex-end; background: var(--primary); color: white; }
-        .msg.other { align-self: flex-start; background: #f1f5f9; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        /* VIDEO CALL UI */
-        #video-grid { position: absolute; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; }
-        video { width: 100%; height: 100%; object-fit: cover; background: #222; }
-        #local-video { position: absolute; top: 20px; right: 20px; width: 100px; height: 150px; border-radius: 10px; border: 2px solid white; z-index: 2001; }
-        .call-controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 20px; z-index: 2002; }
-        .btn-call-end { background: #ef4444; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; color: white; border: none; font-size: 24px; }
-        
-        #incoming-call { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 90%; background: var(--primary); color: white; padding: 15px; border-radius: 15px; display: none; z-index: 3000; justify-content: space-between; align-items: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        
-        .chat-footer { padding: 10px; display: flex; gap: 8px; border-top: 1px solid var(--border); }
-        input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); outline: none; }
-        .btn { padding: 10px 20px; border-radius: 10px; border: none; background: var(--primary); color: white; cursor: pointer; }
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Noto Sans JP', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        /* Magical Hellfire Sparks Animation */
+        #embers-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Elegant Header */
+        .header-container {
+            z-index: 10;
+            text-align: center;
+            margin-bottom: 4rem;
+            padding: 0 1rem;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.2rem, 8vw, 4.5rem);
+            color: var(--neon-pink);
+            text-shadow: 
+                0 0 10px var(--neon-pink),
+                0 0 20px var(--deep-crimson),
+                0 0 30px var(--vibrant-purple);
+            animation: pulse-glow 4s ease-in-out infinite;
+            line-height: 1.2;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--deep-crimson), 0 0 30px var(--vibrant-purple);
+                transform: scale(1);
+            }
+            50% {
+                text-shadow: 0 0 20px var(--neon-pink), 0 0 40px var(--deep-crimson), 0 0 60px var(--vibrant-purple);
+                transform: scale(1.03);
+            }
+        }
+
+        /* Luxury Pulsing Button */
+        .button-container {
+            z-index: 10;
+        }
+
+        .luxury-button {
+            background: rgba(0, 0, 0, 0.6);
+            border: 4px solid var(--neon-pink);
+            color: var(--neon-pink);
+            padding: 1.2rem 3rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-radius: 100px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            letter-spacing: 0.1em;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.4);
+            animation: button-pulse 2.5s ease-in-out infinite;
+            outline: none;
+        }
+
+        .luxury-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(255, 105, 180, 0.7);
+            border-color: var(--vibrant-purple);
+        }
+
+        .luxury-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -100%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
+
+        @keyframes button-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 105, 180, 0.4); border-color: var(--neon-pink); }
+            50% { box-shadow: 0 0 40px rgba(191, 64, 191, 0.6); border-color: var(--vibrant-purple); }
+        }
+
+        /* Glassmorphism Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            padding: 1.5rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 2.5rem;
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 100px rgba(255, 105, 180, 0.1);
+            transform: translateY(30px) rotateX(10deg);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0) rotateX(0);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover { color: #fff; }
+
+        .message-text {
+            font-size: 1.25rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 300;
+            white-space: pre-wrap;
+            letter-spacing: 0.05em;
+        }
+
+        .bottom-accent {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--neon-pink), transparent);
+            opacity: 0.5;
+        }
+
+        .footer-detail {
+            position: fixed;
+            bottom: 2rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            color: rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
+    <canvas id="embers-canvas"></canvas>
 
-    <div id="incoming-call">
-        <span id="caller-name">Panggilan Masuk...</span>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="answerCall()" style="background: #10b981; border: none; color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer;">Terima</button>
-            <button onclick="declineCall()" style="background: #ef4444; border: none; color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer;">Tolak</button>
+    <div class="header-container">
+        <h1>卒業おめでとう、アイサ！🌸</h1>
+    </div>
+
+    <div class="button-container">
+        <button class="luxury-button" id="open-btn">メッセージを開く</button>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" id="close-btn">&times;</button>
+            <p class="message-text">アイサ、高校卒業本当にお疲れ様！🌸
+新しい門出を全力で応援してるよ。
+また落ち着いたら、ハズビンの話したり一緒にゲームで暴れようね（笑）
+アイサにとって最高の一日になりますように！(◠‿◕)</p>
+            <div class="bottom-accent"></div>
         </div>
     </div>
 
-    <div id="video-grid">
-        <video id="local-video" autoplay muted playsinline></video>
-        <video id="remote-video" autoplay playsinline></video>
-        <div class="call-controls">
-            <button class="btn-call-end" onclick="endCall()">??</button>
-        </div>
-    </div>
-
-    <div class="container">
-        <div id="login-screen" style="padding:40px; text-align: center;">
-            <h1 style="margin-bottom: 20px;">VIP CHAT</h1>
-            <input type="text" id="username" placeholder="Nama Kamu" style="width: 100%; margin-bottom: 10px; padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
-            <input type="text" id="roomCode" placeholder="Kode Room" style="width: 100%; margin-bottom: 10px; padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
-            <button class="btn" style="width: 100%;" onclick="joinChat()">MASUK</button>
-        </div>
-
-        <div id="chat-screen" style="display:none; flex-direction:column; height: 100%;">
-            <div style="padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                <b id="roomTitle">#Room</b>
-                <div style="display: flex; gap: 15px;">
-                    <span style="cursor: pointer; font-size: 20px;" onclick="startCall(false)">??</span>
-                    <span style="cursor: pointer; font-size: 20px;" onclick="startCall(true)">??</span>
-                </div>
-            </div>
-            <div id="messages"></div>
-            <div class="chat-footer">
-                <input type="text" id="msgInp" placeholder="Pesan..." onkeypress="if(event.key==='Enter') sendMsg()">
-                <button class="btn" onclick="sendMsg()">?</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <div class="footer-detail">Exclusively for Aisa • 2026</div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBKugvHq1Y5OeAjUWTAYrvXujJXuhrJKKA",
-            databaseURL: "https://chatsaya-417c0-default-rtdb.asia-southeast1.firebasedatabase.app"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // --- Magical Hellfire Sparks Animation ---
+        const canvas = document.getElementById('embers-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
 
-        let myUser = "", myRoom = "", peer, localStream, currentCall;
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
-        function joinChat() {
-            myUser = document.getElementById('username').value.trim();
-            myRoom = document.getElementById('roomCode').value.trim().toLowerCase();
-            if(!myUser || !myRoom) return;
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 100;
+                this.size = Math.random() * 3 + 1;
+                this.speedY = Math.random() * 1.5 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 1;
+                this.opacity = Math.random() * 0.5 + 0.3;
+                this.color = ['#FF69B4', '#8B0000', '#BF40BF'][Math.floor(Math.random() * 3)];
+                this.life = 0;
+                this.maxLife = Math.random() * 200 + 100;
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                this.life++;
+                if (this.y < -10 || this.life > this.maxLife) this.reset();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.opacity * (1 - this.life / this.maxLife);
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
+            }
+        }
 
-            // Inisialisasi PeerJS dengan ID berupa Username
-            peer = new Peer(myUser + "-" + myRoom);
+        function initParticles() {
+            for (let i = 0; i < 60; i++) particles.push(new Particle());
+        }
 
-            peer.on('open', (id) => {
-                console.log('Peer ID saya: ' + id);
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('chat-screen').style.display = 'flex';
-                document.getElementById('roomTitle').innerText = "#" + myRoom;
-                listenMessages();
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+
+        initParticles();
+        animate();
+
+        // --- Interaction Logic ---
+        const openBtn = document.getElementById('open-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const modalOverlay = document.getElementById('modal-overlay');
+
+        function triggerConfetti() {
+            const colors = ['#FF69B4', '#FFD700', '#BF40BF'];
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#FFD700', '#FF69B4'],
+                ticks: 200,
+                gravity: 1.2,
+                scalar: 1.2
             });
-
-            // Mendengarkan Panggilan Masuk
-            peer.on('call', call => {
-                currentCall = call;
-                document.getElementById('incoming-call').style.display = 'flex';
-                document.getElementById('caller-name').innerText = "Panggilan dari Seseorang...";
-            });
+            // Side bursts
+            confetti({ particleCount: 40, angle: 60, spread: 55, origin: { x: 0 }, colors: colors });
+            confetti({ particleCount: 40, angle: 120, spread: 55, origin: { x: 1 }, colors: colors });
         }
 
-        function listenMessages() {
-            db.ref(`rooms/${myRoom}/msgs`).on('child_added', s => {
-                const d = s.val();
-                const div = document.createElement('div');
-                div.className = `msg ${d.u === myUser ? 'own' : 'other'}`;
-                div.innerHTML = `<small style="display:block; font-size:10px;">${d.u}</small>${d.t}`;
-                document.getElementById('messages').appendChild(div);
-                document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
-            });
-        }
+        openBtn.addEventListener('click', () => {
+            modalOverlay.classList.add('active');
+            triggerConfetti();
+        });
 
-        function sendMsg() {
-            const i = document.getElementById('msgInp');
-            if(!i.value) return;
-            db.ref(`rooms/${myRoom}/msgs`).push({ u: myUser, t: i.value });
-            i.value = "";
-        }
-
-        // --- CALL LOGIC ---
-        async function startCall(video) {
-            localStream = await navigator.mediaDevices.getUserMedia({ video: video, audio: true });
-            document.getElementById('video-grid').style.display = 'flex';
-            document.getElementById('local-video').srcObject = localStream;
-
-            // Di sistem ini, user harus tahu username lawan bicaranya.
-            // Kita coba panggil user terakhir yang kirim pesan di room (simulasi singkat)
-            let target = prompt("Masukkan nama user yang ingin ditelpon:");
-            if(!target) return endCall();
-
-            const call = peer.call(target + "-" + myRoom, localStream);
-            call.on('stream', remoteStream => {
-                document.getElementById('remote-video').srcObject = remoteStream;
-            });
-            currentCall = call;
-        }
-
-        async function answerCall() {
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            document.getElementById('incoming-call').style.display = 'none';
-            document.getElementById('video-grid').style.display = 'flex';
-            document.getElementById('local-video').srcObject = localStream;
-            
-            currentCall.answer(localStream);
-            currentCall.on('stream', remoteStream => {
-                document.getElementById('remote-video').srcObject = remoteStream;
-            });
-        }
-
-        function declineCall() {
-            document.getElementById('incoming-call').style.display = 'none';
-        }
-
-        function endCall() {
-            if(currentCall) currentCall.close();
-            if(localStream) localStream.getTracks().forEach(track => track.stop());
-            document.getElementById('video-grid').style.display = 'none';
-        }
+        closeBtn.addEventListener('click', () => modalOverlay.classList.remove('active'));
+        modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('active'); });
     </script>
 </body>
 </html>
